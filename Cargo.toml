@@ -1,0 +1,7 @@
+[package]
+name = "radius-parser"
+version = "0.1.0"
+authors = ["Pierre Chifflier <chifflier@wzdftpd.net>"]
+
+[dependencies]
+nom = {version = "^2.0", features = ["verbose-errors"]}
