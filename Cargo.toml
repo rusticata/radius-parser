@@ -1,8 +1,17 @@
 [package]
+description = "Parser for the RADIUS protocol"
+license = "LGPL-2.1+"
+keywords = ["RADIUS","parser","nom"]
+homepage = "https://github.com/rusticata/radius-parser"
+repository = "https://github.com/rusticata/radius-parser.git"
 name = "radius-parser"
 version = "0.1.0"
 authors = ["Pierre Chifflier <chifflier@wzdftpd.net>"]
+categories = ["parsing"]
 
 [dependencies]
 nom = {version = "^2.0", features = ["verbose-errors"]}
 enum_primitive = "^0"
+
+[badges]
+travis-ci = { repository = "rusticata/radius-parser" }
