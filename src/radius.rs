@@ -1,5 +1,8 @@
 use nom::{IResult,be_u8,be_u16};
 
+use enum_primitive::FromPrimitive;
+
+enum_from_primitive! {
 #[derive(Debug,PartialEq)]
 #[repr(u8)]
 pub enum RadiusCode {
@@ -12,6 +15,7 @@ pub enum RadiusCode {
     StatusServer = 12,
     StatusClient = 13,
     Reserved = 255,
+}
 }
 
 #[derive(Debug,PartialEq)]
@@ -28,6 +32,13 @@ pub struct RadiusAttribute<'a> {
     pub typ: u8,
     pub len: u8,
     pub val: &'a [u8],
+}
+
+
+impl<'a> RadiusData<'a> {
+    pub fn get_code(&self) -> Option<RadiusCode> {
+        RadiusCode::from_u8(self.code)
+    }
 }
 
 

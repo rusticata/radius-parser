@@ -5,3 +5,4 @@ authors = ["Pierre Chifflier <chifflier@wzdftpd.net>"]
 
 [dependencies]
 nom = {version = "^2.0", features = ["verbose-errors"]}
+enum_primitive = "^0"
