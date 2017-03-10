@@ -2,6 +2,8 @@ use nom::{IResult,be_u8,be_u16};
 
 use enum_primitive::FromPrimitive;
 
+use radius_attr::*;
+
 enum_from_primitive! {
 #[derive(Debug,PartialEq)]
 #[repr(u8)]
@@ -27,13 +29,6 @@ pub struct RadiusData<'a> {
     pub attributes: Option<Vec<RadiusAttribute<'a>>>,
 }
 
-#[derive(Debug,PartialEq)]
-pub struct RadiusAttribute<'a> {
-    pub typ: u8,
-    pub len: u8,
-    pub val: &'a [u8],
-}
-
 
 impl<'a> RadiusData<'a> {
     pub fn get_code(&self) -> Option<RadiusCode> {
@@ -41,21 +36,6 @@ impl<'a> RadiusData<'a> {
     }
 }
 
-
-pub fn parse_radius_attribute(i:&[u8]) -> IResult<&[u8],RadiusAttribute> {
-    do_parse!(i,
-        t: be_u8 >>
-        l: be_u8 >>
-        v: take!(l-2) >>
-        (
-            RadiusAttribute {
-                typ: t,
-                len: l,
-                val: v,
-            }
-        )
-    )
-}
 
 pub fn parse_radius_data(i:&[u8]) -> IResult<&[u8],RadiusData> {
     do_parse!(i,
