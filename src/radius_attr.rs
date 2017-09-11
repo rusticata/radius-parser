@@ -39,9 +39,42 @@ fn parse_attribute_content(i:&[u8], t:u8) -> IResult<&[u8],RadiusAttribute> {
 pub fn parse_radius_attribute(i:&[u8]) -> IResult<&[u8],RadiusAttribute> {
     do_parse!(i,
         t: be_u8 >>
-        l: be_u8 >>
+        l: verify!(be_u8, |val:u8| val >= 2) >>
         v: flat_map!(take!(l-2),call!(parse_attribute_content,t)) >>
         ( v )
     )
 }
 
+#[cfg(test)]
+mod tests {
+    use radius_attr::*;
+    use nom::{IResult,ErrorKind};
+
+#[test]
+fn test_attribute_invalid() {
+    let data = &[255, 0, 2, 2];
+    assert_eq!(
+        parse_radius_attribute(data),
+        IResult::Error(error_position!(ErrorKind::Verify,&data[1..]))
+    );
+}
+
+#[test]
+fn test_attribute_empty() {
+    let data = &[255, 2, 2, 2];
+    assert_eq!(
+        parse_radius_attribute(data),
+        IResult::Done(&data[2..], RadiusAttribute::Unknown(255,&[]))
+    );
+}
+
+#[test]
+fn test_attribute() {
+    let data = &[255, 4, 2, 2];
+    assert_eq!(
+        parse_radius_attribute(data),
+        IResult::Done(&b""[..], RadiusAttribute::Unknown(255,&[2,2]))
+    );
+}
+
+}
