@@ -15,6 +15,9 @@ pub enum RadiusAttributeType {
     FramedIPAddress = 8,
     FramedIPNetmask = 9,
     FramedRouting = 10,
+    FilterId = 11,
+    FramedMTU = 12,
+    FramedCompression = 13,
 }
 }
 
@@ -58,6 +61,29 @@ pub enum FramedProtocol {
     X75,
 }
 
+
+/// This Attribute indicates a compression protocol to be used for the
+/// link.  It MAY be used in Access-Accept packets.  It MAY be used in
+/// an Access-Request packet as a hint to the server that the NAS
+/// would prefer to use that compression, but the server is not
+/// required to honor the hint.
+///
+/// More than one compression protocol Attribute MAY be sent.  It is
+/// the responsibility of the NAS to apply the proper compression
+/// protocol to appropriate link traffic.
+#[derive(Debug,PartialEq)]
+#[repr(u8)]
+pub enum FramedCompression {
+    /// No compression
+    None = 0,
+    /// VJ TCP/IP header compression (See RFC1144)
+    TcpIp = 1,
+    /// IPX header compression
+    Ipx = 2,
+    /// Stac-LZS compression
+    StaticLzs = 3,
+}
+
 #[derive(Debug,PartialEq)]
 pub enum RadiusAttribute<'a> {
     UserName(&'a[u8]),
@@ -70,6 +96,9 @@ pub enum RadiusAttribute<'a> {
     FramedIPAddress(Ipv4Addr),
     FramedIPNetmask(Ipv4Addr),
     FramedRouting(u32),
+    FilterId(&'a[u8]),
+    FramedMTU(u32),
+    FramedCompression(u32),
 
     Unknown(u8,&'a[u8]),
 }
@@ -87,6 +116,9 @@ fn parse_attribute_content(i:&[u8], t:u8) -> IResult<&[u8],RadiusAttribute> {
         8 => map!(i, take!(4), |v:&[u8]| RadiusAttribute::FramedIPAddress(Ipv4Addr::new(v[0],v[1],v[2],v[3]))),
         9 => map!(i, take!(4), |v:&[u8]| RadiusAttribute::FramedIPNetmask(Ipv4Addr::new(v[0],v[1],v[2],v[3]))),
         10 => map!(i, be_u32, |v| RadiusAttribute::FramedRouting(v)),
+        11 => value!(i, RadiusAttribute::FilterId(i)),
+        12 => map!(i, be_u32, |v| RadiusAttribute::FramedMTU(v)),
+        13 => map!(i, be_u32, |v| RadiusAttribute::FramedCompression(v)),
         _ => value!(i, RadiusAttribute::Unknown(t,i)),
     }
 }
