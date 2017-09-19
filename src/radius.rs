@@ -1,3 +1,8 @@
+//! Radius accounting
+//!
+//! RFC 2865: Remote Authentication Dial In User Service (RADIUS)
+//! RFC 2866: RADIUS Accounting
+
 use nom::{IResult,be_u8,be_u16};
 
 use enum_primitive::FromPrimitive;
