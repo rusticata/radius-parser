@@ -1,4 +1,4 @@
-use nom::{IResult,be_u8,be_u32};
+use nom::{IResult,be_u8,be_u32,Needed};
 use std::net::Ipv4Addr;
 
 enum_from_primitive! {
@@ -108,7 +108,10 @@ fn parse_attribute_content(i:&[u8], t:u8) -> IResult<&[u8],RadiusAttribute> {
     match t {
         1 => value!(i, RadiusAttribute::UserName(i)),
         2 => value!(i, RadiusAttribute::UserPassword(i)),
-        3 => value!(i, RadiusAttribute::ChapPassword(i[0],&i[1..])),
+        3 => {
+            if i.len() < 2 { return IResult::Incomplete(Needed::Size(2)); }
+            value!(i, RadiusAttribute::ChapPassword(i[0],&i[1..]))
+        },
         4 => map!(i, take!(4), |v:&[u8]| RadiusAttribute::NasIPAddress(Ipv4Addr::new(v[0],v[1],v[2],v[3]))),
         5 => map!(i, be_u32, |v| RadiusAttribute::NasPort(v)),
         6 => map!(i, be_u32, |v| RadiusAttribute::ServiceType(v)),
