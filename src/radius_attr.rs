@@ -1,5 +1,6 @@
 use nom::{IResult,be_u8,be_u32,Needed};
 use std::net::Ipv4Addr;
+use enum_primitive::FromPrimitive;
 
 enum_from_primitive! {
 #[derive(Debug,PartialEq)]
@@ -100,14 +101,14 @@ pub enum RadiusAttribute<'a> {
     ChapPassword(u8,&'a[u8]),
     NasIPAddress(Ipv4Addr),
     NasPort(u32),
-    ServiceType(u32),
-    FramedProtocol(u32),
+    ServiceType(ServiceType),
+    FramedProtocol(FramedProtocol),
     FramedIPAddress(Ipv4Addr),
     FramedIPNetmask(Ipv4Addr),
-    FramedRouting(u32),
+    FramedRouting(FramedRouting),
     FilterId(&'a[u8]),
     FramedMTU(u32),
-    FramedCompression(u32),
+    FramedCompression(FramedCompression),
     VendorSpecific(u32, &'a [u8]),
 
     Unknown(u8,&'a[u8]),
@@ -124,14 +125,14 @@ fn parse_attribute_content(i:&[u8], t:u8) -> IResult<&[u8],RadiusAttribute> {
         },
         4 => map!(i, take!(4), |v:&[u8]| RadiusAttribute::NasIPAddress(Ipv4Addr::new(v[0],v[1],v[2],v[3]))),
         5 => map!(i, be_u32, |v| RadiusAttribute::NasPort(v)),
-        6 => map!(i, be_u32, |v| RadiusAttribute::ServiceType(v)),
-        7 => map!(i, be_u32, |v| RadiusAttribute::FramedProtocol(v)),
+        6 => map_opt!(i, be_u32, |v| ServiceType::from_u32(v).map(|v| RadiusAttribute::ServiceType(v))),
+        7 => map_opt!(i, be_u32, |v| FramedProtocol::from_u32(v).map(|v| RadiusAttribute::FramedProtocol(v))),
         8 => map!(i, take!(4), |v:&[u8]| RadiusAttribute::FramedIPAddress(Ipv4Addr::new(v[0],v[1],v[2],v[3]))),
         9 => map!(i, take!(4), |v:&[u8]| RadiusAttribute::FramedIPNetmask(Ipv4Addr::new(v[0],v[1],v[2],v[3]))),
-        10 => map!(i, be_u32, |v| RadiusAttribute::FramedRouting(v)),
+        10 => map_opt!(i, be_u32, |v| FramedRouting::from_u32(v).map(|v| RadiusAttribute::FramedRouting(v))),
         11 => value!(i, RadiusAttribute::FilterId(i)),
         12 => map!(i, be_u32, |v| RadiusAttribute::FramedMTU(v)),
-        13 => map!(i, be_u32, |v| RadiusAttribute::FramedCompression(v)),
+        13 => map_opt!(i, be_u32, |v| FramedCompression::from_u32(v).map(|v| RadiusAttribute::FramedCompression(v))),
         26 => {
             if i.len() < 5 {
                 return IResult::Incomplete(Needed::Size(5));
