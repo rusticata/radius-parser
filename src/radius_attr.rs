@@ -21,6 +21,7 @@ pub enum RadiusAttributeType {
 }
 }
 
+enum_from_primitive! {
 #[derive(Debug,PartialEq)]
 #[repr(u8)]
 pub enum ServiceType {
@@ -36,7 +37,9 @@ pub enum ServiceType {
     CallCheck = 10,
     CallbackAdministrative = 11,
 }
+}
 
+enum_from_primitive! {
 #[derive(Debug,PartialEq)]
 #[repr(u8)]
 pub enum FramedRouting {
@@ -45,7 +48,9 @@ pub enum FramedRouting {
     Receive = 2,
     SendReceive = 3,
 }
+}
 
+enum_from_primitive! {
 #[derive(Debug,PartialEq)]
 #[repr(u8)]
 pub enum FramedProtocol {
@@ -58,7 +63,8 @@ pub enum FramedProtocol {
     /// Xylogics proprietary IPX/SLIP
     Xylogics = 5,
     /// X.75 Synchronous
-    X75,
+    X75 = 6,
+}
 }
 
 
@@ -71,6 +77,7 @@ pub enum FramedProtocol {
 /// More than one compression protocol Attribute MAY be sent.  It is
 /// the responsibility of the NAS to apply the proper compression
 /// protocol to appropriate link traffic.
+enum_from_primitive! {
 #[derive(Debug,PartialEq)]
 #[repr(u8)]
 pub enum FramedCompression {
@@ -82,6 +89,7 @@ pub enum FramedCompression {
     Ipx = 2,
     /// Stac-LZS compression
     StaticLzs = 3,
+}
 }
 
 #[derive(Debug,PartialEq)]
