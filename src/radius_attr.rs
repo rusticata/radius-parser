@@ -18,6 +18,7 @@ pub enum RadiusAttributeType {
     FilterId = 11,
     FramedMTU = 12,
     FramedCompression = 13,
+    VendorSpecific = 26,
 }
 }
 
@@ -107,6 +108,7 @@ pub enum RadiusAttribute<'a> {
     FilterId(&'a[u8]),
     FramedMTU(u32),
     FramedCompression(u32),
+    VendorSpecific(u32, &'a [u8]),
 
     Unknown(u8,&'a[u8]),
 }
@@ -130,6 +132,18 @@ fn parse_attribute_content(i:&[u8], t:u8) -> IResult<&[u8],RadiusAttribute> {
         11 => value!(i, RadiusAttribute::FilterId(i)),
         12 => map!(i, be_u32, |v| RadiusAttribute::FramedMTU(v)),
         13 => map!(i, be_u32, |v| RadiusAttribute::FramedCompression(v)),
+        26 => {
+            if i.len() < 5 {
+                return IResult::Incomplete(Needed::Size(5));
+            }
+            value!(
+                i,
+                RadiusAttribute::VendorSpecific(
+                    ((i[0] as u32) << 24) + ((i[1] as u32) << 16) + ((i[2] as u32) << 8) + (i[3] as u32),
+                    &i[4..]
+                )
+            )
+        }
         _ => value!(i, RadiusAttribute::Unknown(t,i)),
     }
 }
@@ -175,4 +189,24 @@ fn test_attribute() {
     );
 }
 
+#[test]
+fn test_parse_vendor_specific() {
+    {
+        let data = &[26, 7, 0, 1, 2, 3, 120];
+        assert_eq!(
+            parse_radius_attribute(data),
+            IResult::Done(
+                &b""[..],
+                RadiusAttribute::VendorSpecific(66051, "x".as_bytes())
+            )
+        )
+    }
+    {
+        let data = &[26, 6, 0, 1, 2, 3];
+        assert_eq!(
+            parse_radius_attribute(data),
+            IResult::Incomplete(Needed::Size(7))
+        )
+    }
+}
 }
