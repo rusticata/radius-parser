@@ -110,6 +110,8 @@ pub enum RadiusAttribute<'a> {
     FramedMTU(u32),
     FramedCompression(FramedCompression),
     VendorSpecific(u32, &'a [u8]),
+    CalledStationId(&'a[u8]),
+    CallingStationId(&'a[u8]),
 
     Unknown(u8,&'a[u8]),
 }
@@ -146,6 +148,7 @@ fn parse_attribute_content(i:&[u8], t:u8) -> IResult<&[u8],RadiusAttribute> {
             )
         }
         30 => value!(i, RadiusAttribute::CalledStationId(i)),
+        31 => value!(i, RadiusAttribute::CallingStationId(i)),
         _ => value!(i, RadiusAttribute::Unknown(t,i)),
     }
 }
@@ -221,6 +224,20 @@ fn test_parse_called_station_id() {
             IResult::Done(
                 &b""[..],
                 RadiusAttribute::CalledStationId("aa-bb-cc-dd-ee-ff".as_bytes())
+            )
+        )
+    }
+}
+
+#[test]
+fn test_parse_calling_station_id() {
+    {
+        let data = &[31, 19, 97, 97, 45, 98, 98, 45, 99, 99, 45, 100, 100, 45, 101, 101, 45, 102, 102];
+        assert_eq!(
+            parse_radius_attribute(data),
+            IResult::Done(
+                &b""[..],
+                RadiusAttribute::CallingStationId("aa-bb-cc-dd-ee-ff".as_bytes())
             )
         )
     }
