@@ -145,6 +145,7 @@ fn parse_attribute_content(i:&[u8], t:u8) -> IResult<&[u8],RadiusAttribute> {
                 )
             )
         }
+        30 => value!(i, RadiusAttribute::CalledStationId(i)),
         _ => value!(i, RadiusAttribute::Unknown(t,i)),
     }
 }
@@ -207,6 +208,20 @@ fn test_parse_vendor_specific() {
         assert_eq!(
             parse_radius_attribute(data),
             IResult::Incomplete(Needed::Size(7))
+        )
+    }
+}
+
+#[test]
+fn test_parse_called_station_id() {
+    {
+        let data = &[30, 19, 97, 97, 45, 98, 98, 45, 99, 99, 45, 100, 100, 45, 101, 101, 45, 102, 102];
+        assert_eq!(
+            parse_radius_attribute(data),
+            IResult::Done(
+                &b""[..],
+                RadiusAttribute::CalledStationId("aa-bb-cc-dd-ee-ff".as_bytes())
+            )
         )
     }
 }
