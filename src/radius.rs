@@ -41,9 +41,8 @@ impl<'a> RadiusData<'a> {
     }
 }
 
-
-pub fn parse_radius_data(i:&[u8]) -> IResult<&[u8],RadiusData> {
-    do_parse!(i,
+pub fn parse_radius_data(i: &[u8]) -> IResult<&[u8], RadiusData> {
+    do_parse!{i,
         c:    be_u8 >>
         id:   be_u8 >>
         len:  be_u16 >>
@@ -60,5 +59,5 @@ pub fn parse_radius_data(i:&[u8]) -> IResult<&[u8],RadiusData> {
                 attributes: attr,
             }
         )
-    )
+    }
 }

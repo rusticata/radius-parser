@@ -125,25 +125,25 @@ fn parse_attribute_content(i:&[u8], t:u8) -> IResult<&[u8],RadiusAttribute> {
             if i.len() < 2 { return IResult::Incomplete(Needed::Size(2)); }
             value!(i, RadiusAttribute::ChapPassword(i[0],&i[1..]))
         },
-        4 => map!(i, take!(4), |v:&[u8]| RadiusAttribute::NasIPAddress(Ipv4Addr::new(v[0],v[1],v[2],v[3]))),
-        5 => map!(i, be_u32, |v| RadiusAttribute::NasPort(v)),
-        6 => map_opt!(i, be_u32, |v| ServiceType::from_u32(v).map(|v| RadiusAttribute::ServiceType(v))),
-        7 => map_opt!(i, be_u32, |v| FramedProtocol::from_u32(v).map(|v| RadiusAttribute::FramedProtocol(v))),
-        8 => map!(i, take!(4), |v:&[u8]| RadiusAttribute::FramedIPAddress(Ipv4Addr::new(v[0],v[1],v[2],v[3]))),
-        9 => map!(i, take!(4), |v:&[u8]| RadiusAttribute::FramedIPNetmask(Ipv4Addr::new(v[0],v[1],v[2],v[3]))),
-        10 => map_opt!(i, be_u32, |v| FramedRouting::from_u32(v).map(|v| RadiusAttribute::FramedRouting(v))),
+        4 => map!{i, take!(4), |v:&[u8]| RadiusAttribute::NasIPAddress(Ipv4Addr::new(v[0],v[1],v[2],v[3]))},
+        5 => map!{i, be_u32, |v| RadiusAttribute::NasPort(v)},
+        6 => map_opt!{i, be_u32, |v| ServiceType::from_u32(v).map(|v| RadiusAttribute::ServiceType(v))},
+        7 => map_opt!{i, be_u32, |v| FramedProtocol::from_u32(v).map(|v| RadiusAttribute::FramedProtocol(v))},
+        8 => map!{i, take!(4), |v:&[u8]| RadiusAttribute::FramedIPAddress(Ipv4Addr::new(v[0],v[1],v[2],v[3]))},
+        9 => map!{i, take!(4), |v:&[u8]| RadiusAttribute::FramedIPNetmask(Ipv4Addr::new(v[0],v[1],v[2],v[3]))},
+        10 => map_opt!{i, be_u32, |v| FramedRouting::from_u32(v).map(|v| RadiusAttribute::FramedRouting(v))},
         11 => value!(i, RadiusAttribute::FilterId(i)),
         12 => map!(i, be_u32, |v| RadiusAttribute::FramedMTU(v)),
-        13 => map_opt!(i, be_u32, |v| FramedCompression::from_u32(v).map(|v| RadiusAttribute::FramedCompression(v))),
+        13 => map_opt!{i, be_u32, |v| FramedCompression::from_u32(v).map(|v| RadiusAttribute::FramedCompression(v))},
         26 => {
             if i.len() < 5 {
                 return IResult::Incomplete(Needed::Size(5));
             }
-            do_parse!(i,
+            do_parse!{i,
                       vendorid:   be_u32 >>
                       vendordata: rest >>
                       ( RadiusAttribute::VendorSpecific(vendorid,vendordata) )
-            )
+            }
         }
         30 => value!(i, RadiusAttribute::CalledStationId(i)),
         31 => value!(i, RadiusAttribute::CallingStationId(i)),
@@ -152,12 +152,12 @@ fn parse_attribute_content(i:&[u8], t:u8) -> IResult<&[u8],RadiusAttribute> {
 }
 
 pub fn parse_radius_attribute(i:&[u8]) -> IResult<&[u8],RadiusAttribute> {
-    do_parse!(i,
+    do_parse!{i,
         t: be_u8 >>
         l: verify!(be_u8, |val:u8| val >= 2) >>
         v: flat_map!(take!(l-2),call!(parse_attribute_content,t)) >>
         ( v )
-    )
+    }
 }
 
 #[cfg(test)]
