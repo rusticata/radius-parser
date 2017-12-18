@@ -1,4 +1,4 @@
-use nom::{IResult,be_u8,be_u32,Needed};
+use nom::{IResult,be_u8,be_u32,Needed,rest};
 use std::net::Ipv4Addr;
 use enum_primitive::FromPrimitive;
 
@@ -139,12 +139,10 @@ fn parse_attribute_content(i:&[u8], t:u8) -> IResult<&[u8],RadiusAttribute> {
             if i.len() < 5 {
                 return IResult::Incomplete(Needed::Size(5));
             }
-            value!(
-                i,
-                RadiusAttribute::VendorSpecific(
-                    ((i[0] as u32) << 24) + ((i[1] as u32) << 16) + ((i[2] as u32) << 8) + (i[3] as u32),
-                    &i[4..]
-                )
+            do_parse!(i,
+                      vendorid:   be_u32 >>
+                      vendordata: rest >>
+                      ( RadiusAttribute::VendorSpecific(vendorid,vendordata) )
             )
         }
         30 => value!(i, RadiusAttribute::CalledStationId(i)),
