@@ -1,4 +1,4 @@
-use nom::{IResult,be_u8,be_u32,Needed,rest};
+use nom::{rest, IResult, Needed, be_u32, be_u8};
 use std::net::Ipv4Addr;
 use enum_primitive::FromPrimitive;
 
@@ -69,7 +69,6 @@ pub enum FramedProtocol {
 }
 }
 
-
 /// This Attribute indicates a compression protocol to be used for the
 /// link.  It MAY be used in Access-Accept packets.  It MAY be used in
 /// an Access-Request packet as a hint to the server that the NAS
@@ -94,11 +93,11 @@ pub enum FramedCompression {
 }
 }
 
-#[derive(Debug,PartialEq)]
+#[derive(Debug, PartialEq)]
 pub enum RadiusAttribute<'a> {
-    UserName(&'a[u8]),
-    UserPassword(&'a[u8]),
-    ChapPassword(u8,&'a[u8]),
+    UserName(&'a [u8]),
+    UserPassword(&'a [u8]),
+    ChapPassword(u8, &'a [u8]),
     NasIPAddress(Ipv4Addr),
     NasPort(u32),
     ServiceType(ServiceType),
@@ -106,25 +105,26 @@ pub enum RadiusAttribute<'a> {
     FramedIPAddress(Ipv4Addr),
     FramedIPNetmask(Ipv4Addr),
     FramedRouting(FramedRouting),
-    FilterId(&'a[u8]),
+    FilterId(&'a [u8]),
     FramedMTU(u32),
     FramedCompression(FramedCompression),
     VendorSpecific(u32, &'a [u8]),
-    CalledStationId(&'a[u8]),
-    CallingStationId(&'a[u8]),
+    CalledStationId(&'a [u8]),
+    CallingStationId(&'a [u8]),
 
-    Unknown(u8,&'a[u8]),
+    Unknown(u8, &'a [u8]),
 }
 
-
-fn parse_attribute_content(i:&[u8], t:u8) -> IResult<&[u8],RadiusAttribute> {
+fn parse_attribute_content(i: &[u8], t: u8) -> IResult<&[u8], RadiusAttribute> {
     match t {
         1 => value!(i, RadiusAttribute::UserName(i)),
         2 => value!(i, RadiusAttribute::UserPassword(i)),
         3 => {
-            if i.len() < 2 { return IResult::Incomplete(Needed::Size(2)); }
-            value!(i, RadiusAttribute::ChapPassword(i[0],&i[1..]))
-        },
+            if i.len() < 2 {
+                return IResult::Incomplete(Needed::Size(2));
+            }
+            value!(i, RadiusAttribute::ChapPassword(i[0], &i[1..]))
+        }
         4 => map!{i, take!(4), |v:&[u8]| RadiusAttribute::NasIPAddress(Ipv4Addr::new(v[0],v[1],v[2],v[3]))},
         5 => map!{i, be_u32, |v| RadiusAttribute::NasPort(v)},
         6 => map_opt!{i, be_u32, |v| ServiceType::from_u32(v).map(|v| RadiusAttribute::ServiceType(v))},
@@ -147,11 +147,11 @@ fn parse_attribute_content(i:&[u8], t:u8) -> IResult<&[u8],RadiusAttribute> {
         }
         30 => value!(i, RadiusAttribute::CalledStationId(i)),
         31 => value!(i, RadiusAttribute::CallingStationId(i)),
-        _ => value!(i, RadiusAttribute::Unknown(t,i)),
+        _ => value!(i, RadiusAttribute::Unknown(t, i)),
     }
 }
 
-pub fn parse_radius_attribute(i:&[u8]) -> IResult<&[u8],RadiusAttribute> {
+pub fn parse_radius_attribute(i: &[u8]) -> IResult<&[u8], RadiusAttribute> {
     do_parse!{i,
         t: be_u8 >>
         l: verify!(be_u8, |val:u8| val >= 2) >>
@@ -163,81 +163,85 @@ pub fn parse_radius_attribute(i:&[u8]) -> IResult<&[u8],RadiusAttribute> {
 #[cfg(test)]
 mod tests {
     use radius_attr::*;
-    use nom::{IResult,ErrorKind};
+    use nom::{ErrorKind, IResult};
 
-#[test]
-fn test_attribute_invalid() {
-    let data = &[255, 0, 2, 2];
-    assert_eq!(
-        parse_radius_attribute(data),
-        IResult::Error(error_position!(ErrorKind::Verify,&data[1..]))
-    );
-}
-
-#[test]
-fn test_attribute_empty() {
-    let data = &[255, 2, 2, 2];
-    assert_eq!(
-        parse_radius_attribute(data),
-        IResult::Done(&data[2..], RadiusAttribute::Unknown(255,&[]))
-    );
-}
-
-#[test]
-fn test_attribute() {
-    let data = &[255, 4, 2, 2];
-    assert_eq!(
-        parse_radius_attribute(data),
-        IResult::Done(&b""[..], RadiusAttribute::Unknown(255,&[2,2]))
-    );
-}
-
-#[test]
-fn test_parse_vendor_specific() {
-    {
-        let data = &[26, 7, 0, 1, 2, 3, 120];
+    #[test]
+    fn test_attribute_invalid() {
+        let data = &[255, 0, 2, 2];
         assert_eq!(
             parse_radius_attribute(data),
-            IResult::Done(
-                &b""[..],
-                RadiusAttribute::VendorSpecific(66051, "x".as_bytes())
+            IResult::Error(error_position!(ErrorKind::Verify, &data[1..]))
+        );
+    }
+
+    #[test]
+    fn test_attribute_empty() {
+        let data = &[255, 2, 2, 2];
+        assert_eq!(
+            parse_radius_attribute(data),
+            IResult::Done(&data[2..], RadiusAttribute::Unknown(255, &[]))
+        );
+    }
+
+    #[test]
+    fn test_attribute() {
+        let data = &[255, 4, 2, 2];
+        assert_eq!(
+            parse_radius_attribute(data),
+            IResult::Done(&b""[..], RadiusAttribute::Unknown(255, &[2, 2]))
+        );
+    }
+
+    #[test]
+    fn test_parse_vendor_specific() {
+        {
+            let data = &[26, 7, 0, 1, 2, 3, 120];
+            assert_eq!(
+                parse_radius_attribute(data),
+                IResult::Done(
+                    &b""[..],
+                    RadiusAttribute::VendorSpecific(66051, "x".as_bytes())
+                )
             )
-        )
-    }
-    {
-        let data = &[26, 6, 0, 1, 2, 3];
-        assert_eq!(
-            parse_radius_attribute(data),
-            IResult::Incomplete(Needed::Size(7))
-        )
-    }
-}
-
-#[test]
-fn test_parse_called_station_id() {
-    {
-        let data = &[30, 19, 97, 97, 45, 98, 98, 45, 99, 99, 45, 100, 100, 45, 101, 101, 45, 102, 102];
-        assert_eq!(
-            parse_radius_attribute(data),
-            IResult::Done(
-                &b""[..],
-                RadiusAttribute::CalledStationId("aa-bb-cc-dd-ee-ff".as_bytes())
+        }
+        {
+            let data = &[26, 6, 0, 1, 2, 3];
+            assert_eq!(
+                parse_radius_attribute(data),
+                IResult::Incomplete(Needed::Size(7))
             )
-        )
+        }
     }
-}
 
-#[test]
-fn test_parse_calling_station_id() {
-    {
-        let data = &[31, 19, 97, 97, 45, 98, 98, 45, 99, 99, 45, 100, 100, 45, 101, 101, 45, 102, 102];
-        assert_eq!(
-            parse_radius_attribute(data),
-            IResult::Done(
-                &b""[..],
-                RadiusAttribute::CallingStationId("aa-bb-cc-dd-ee-ff".as_bytes())
+    #[test]
+    fn test_parse_called_station_id() {
+        {
+            let data = &[
+                30, 19, 97, 97, 45, 98, 98, 45, 99, 99, 45, 100, 100, 45, 101, 101, 45, 102, 102
+            ];
+            assert_eq!(
+                parse_radius_attribute(data),
+                IResult::Done(
+                    &b""[..],
+                    RadiusAttribute::CalledStationId("aa-bb-cc-dd-ee-ff".as_bytes())
+                )
             )
-        )
+        }
     }
-}
+
+    #[test]
+    fn test_parse_calling_station_id() {
+        {
+            let data = &[
+                31, 19, 97, 97, 45, 98, 98, 45, 99, 99, 45, 100, 100, 45, 101, 101, 45, 102, 102
+            ];
+            assert_eq!(
+                parse_radius_attribute(data),
+                IResult::Done(
+                    &b""[..],
+                    RadiusAttribute::CallingStationId("aa-bb-cc-dd-ee-ff".as_bytes())
+                )
+            )
+        }
+    }
 }

@@ -3,7 +3,7 @@
 //! RFC 2865: Remote Authentication Dial In User Service (RADIUS)
 //! RFC 2866: RADIUS Accounting
 
-use nom::{IResult,be_u8,be_u16};
+use nom::{IResult, be_u16, be_u8};
 
 use enum_primitive::FromPrimitive;
 
@@ -25,15 +25,14 @@ pub enum RadiusCode {
 }
 }
 
-#[derive(Debug,PartialEq)]
+#[derive(Debug, PartialEq)]
 pub struct RadiusData<'a> {
-    pub code: u8,
-    pub identifier: u8,
-    pub length: u16,
+    pub code:          u8,
+    pub identifier:    u8,
+    pub length:        u16,
     pub authenticator: &'a [u8], // 16 bytes
-    pub attributes: Option<Vec<RadiusAttribute<'a>>>,
+    pub attributes:    Option<Vec<RadiusAttribute<'a>>>,
 }
-
 
 impl<'a> RadiusData<'a> {
     pub fn get_code(&self) -> Option<RadiusCode> {
