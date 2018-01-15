@@ -10,7 +10,7 @@ use enum_primitive::FromPrimitive;
 use radius_attr::*;
 
 enum_from_primitive! {
-#[derive(Debug,PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 #[repr(u8)]
 pub enum RadiusCode {
     AccessRequest = 1,
@@ -25,7 +25,7 @@ pub enum RadiusCode {
 }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct RadiusData<'a> {
     pub code:          u8,
     pub identifier:    u8,

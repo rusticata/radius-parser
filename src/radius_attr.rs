@@ -3,7 +3,7 @@ use std::net::Ipv4Addr;
 use enum_primitive::FromPrimitive;
 
 enum_from_primitive! {
-#[derive(Debug,PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 #[repr(u8)]
 pub enum RadiusAttributeType {
     UserName = 1,
@@ -24,7 +24,7 @@ pub enum RadiusAttributeType {
 }
 
 enum_from_primitive! {
-#[derive(Debug,PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 #[repr(u8)]
 pub enum ServiceType {
     Login = 1,
@@ -42,7 +42,7 @@ pub enum ServiceType {
 }
 
 enum_from_primitive! {
-#[derive(Debug,PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 #[repr(u8)]
 pub enum FramedRouting {
     None = 0,
@@ -53,7 +53,7 @@ pub enum FramedRouting {
 }
 
 enum_from_primitive! {
-#[derive(Debug,PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 #[repr(u8)]
 pub enum FramedProtocol {
     Ppp = 1,
@@ -79,7 +79,7 @@ pub enum FramedProtocol {
 /// the responsibility of the NAS to apply the proper compression
 /// protocol to appropriate link traffic.
 enum_from_primitive! {
-#[derive(Debug,PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 #[repr(u8)]
 pub enum FramedCompression {
     /// No compression
@@ -93,7 +93,7 @@ pub enum FramedCompression {
 }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum RadiusAttribute<'a> {
     UserName(&'a [u8]),
     UserPassword(&'a [u8]),
