@@ -1,6 +1,6 @@
 [package]
 description = "Parser for the RADIUS protocol"
-license = "LGPL-2.1+"
+license = "MIT/Apache-2.0"
 keywords = ["RADIUS","parser","nom"]
 homepage = "https://github.com/rusticata/radius-parser"
 repository = "https://github.com/rusticata/radius-parser.git"
