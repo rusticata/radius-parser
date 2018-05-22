@@ -1,4 +1,4 @@
-use nom::{rest, IResult, Needed, be_u32, be_u8};
+use nom::{rest, IResult, Needed, be_u32, be_u8, Err};
 use std::net::Ipv4Addr;
 use enum_primitive::FromPrimitive;
 
@@ -121,7 +121,7 @@ fn parse_attribute_content(i: &[u8], t: u8) -> IResult<&[u8], RadiusAttribute> {
         2 => value!(i, RadiusAttribute::UserPassword(i)),
         3 => {
             if i.len() < 2 {
-                return IResult::Incomplete(Needed::Size(2));
+                return Err(Err::Incomplete(Needed::Size(2)))
             }
             value!(i, RadiusAttribute::ChapPassword(i[0], &i[1..]))
         }
@@ -137,7 +137,7 @@ fn parse_attribute_content(i: &[u8], t: u8) -> IResult<&[u8], RadiusAttribute> {
         13 => map_opt!{i, be_u32, |v| FramedCompression::from_u32(v).map(|v| RadiusAttribute::FramedCompression(v))},
         26 => {
             if i.len() < 5 {
-                return IResult::Incomplete(Needed::Size(5));
+                return Err(Err::Incomplete(Needed::Size(5)))
             }
             do_parse!{i,
                       vendorid:   be_u32 >>
@@ -163,14 +163,14 @@ pub fn parse_radius_attribute(i: &[u8]) -> IResult<&[u8], RadiusAttribute> {
 #[cfg(test)]
 mod tests {
     use radius_attr::*;
-    use nom::{ErrorKind, IResult};
+    use nom::{Err, ErrorKind};
 
     #[test]
     fn test_attribute_invalid() {
         let data = &[255, 0, 2, 2];
         assert_eq!(
             parse_radius_attribute(data),
-            IResult::Error(error_position!(ErrorKind::Verify, &data[1..]))
+            Err(Err::Error(error_position!(&data[1..], ErrorKind::Verify)))
         );
     }
 
@@ -179,7 +179,7 @@ mod tests {
         let data = &[255, 2, 2, 2];
         assert_eq!(
             parse_radius_attribute(data),
-            IResult::Done(&data[2..], RadiusAttribute::Unknown(255, &[]))
+            Ok((&data[2..], RadiusAttribute::Unknown(255, &[])))
         );
     }
 
@@ -188,7 +188,7 @@ mod tests {
         let data = &[255, 4, 2, 2];
         assert_eq!(
             parse_radius_attribute(data),
-            IResult::Done(&b""[..], RadiusAttribute::Unknown(255, &[2, 2]))
+            Ok((&b""[..], RadiusAttribute::Unknown(255, &[2, 2])))
         );
     }
 
@@ -198,17 +198,17 @@ mod tests {
             let data = &[26, 7, 0, 1, 2, 3, 120];
             assert_eq!(
                 parse_radius_attribute(data),
-                IResult::Done(
+                Ok((
                     &b""[..],
                     RadiusAttribute::VendorSpecific(66051, "x".as_bytes())
-                )
+                ))
             )
         }
         {
             let data = &[26, 6, 0, 1, 2, 3];
             assert_eq!(
                 parse_radius_attribute(data),
-                IResult::Incomplete(Needed::Size(7))
+                Err(Err::Incomplete(Needed::Size(5)))
             )
         }
     }
@@ -221,10 +221,10 @@ mod tests {
             ];
             assert_eq!(
                 parse_radius_attribute(data),
-                IResult::Done(
+                Ok((
                     &b""[..],
                     RadiusAttribute::CalledStationId("aa-bb-cc-dd-ee-ff".as_bytes())
-                )
+                ))
             )
         }
     }
@@ -237,10 +237,10 @@ mod tests {
             ];
             assert_eq!(
                 parse_radius_attribute(data),
-                IResult::Done(
+                Ok((
                     &b""[..],
                     RadiusAttribute::CallingStationId("aa-bb-cc-dd-ee-ff".as_bytes())
-                )
+                ))
             )
         }
     }
