@@ -1,72 +1,71 @@
 use nom::{rest, IResult, Needed, be_u32, be_u8, Err};
 use std::net::Ipv4Addr;
-use enum_primitive::FromPrimitive;
 
-enum_from_primitive! {
-#[derive(Clone, Debug, PartialEq)]
-#[repr(u8)]
-pub enum RadiusAttributeType {
-    UserName = 1,
-    UserPassword = 2,
-    ChapPassword = 3,
-    NasIPAddress = 4,
-    NasPort = 5,
-    ServiceType = 6,
-    FramedProtocol = 7,
-    FramedIPAddress = 8,
-    FramedIPNetmask = 9,
-    FramedRouting = 10,
-    FilterId = 11,
-    FramedMTU = 12,
-    FramedCompression = 13,
-    VendorSpecific = 26,
-}
-}
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct RadiusAttributeType(pub u8);
 
-enum_from_primitive! {
-#[derive(Clone, Debug, PartialEq)]
-#[repr(u8)]
-pub enum ServiceType {
-    Login = 1,
-    Framed = 2,
-    CallbackLogin = 3,
-    CallbackFramed = 4,
-    Outbound = 5,
-    Administrative = 6,
-    NasPrompt = 7,
-    AuthenticateOnly = 8,
-    CallbackNasPrompt = 9,
-    CallCheck = 10,
-    CallbackAdministrative = 11,
-}
+#[allow(non_upper_case_globals)]
+impl RadiusAttributeType {
+    pub const UserName          : RadiusAttributeType = RadiusAttributeType(1);
+    pub const UserPassword      : RadiusAttributeType = RadiusAttributeType(2);
+    pub const ChapPassword      : RadiusAttributeType = RadiusAttributeType(3);
+    pub const NasIPAddress      : RadiusAttributeType = RadiusAttributeType(4);
+    pub const NasPort           : RadiusAttributeType = RadiusAttributeType(5);
+    pub const ServiceType       : RadiusAttributeType = RadiusAttributeType(6);
+    pub const FramedProtocol    : RadiusAttributeType = RadiusAttributeType(7);
+    pub const FramedIPAddress   : RadiusAttributeType = RadiusAttributeType(8);
+    pub const FramedIPNetmask   : RadiusAttributeType = RadiusAttributeType(9);
+    pub const FramedRouting     : RadiusAttributeType = RadiusAttributeType(10);
+    pub const FilterId          : RadiusAttributeType = RadiusAttributeType(11);
+    pub const FramedMTU         : RadiusAttributeType = RadiusAttributeType(12);
+    pub const FramedCompression : RadiusAttributeType = RadiusAttributeType(13);
+    pub const VendorSpecific    : RadiusAttributeType = RadiusAttributeType(26);
 }
 
-enum_from_primitive! {
-#[derive(Clone, Debug, PartialEq)]
-#[repr(u8)]
-pub enum FramedRouting {
-    None = 0,
-    Send = 1,
-    Receive = 2,
-    SendReceive = 3,
-}
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct ServiceType(pub u32);
+
+#[allow(non_upper_case_globals)]
+impl ServiceType {
+    pub const Login                  : ServiceType = ServiceType(1);
+    pub const Framed                 : ServiceType = ServiceType(2);
+    pub const CallbackLogin          : ServiceType = ServiceType(3);
+    pub const CallbackFramed         : ServiceType = ServiceType(4);
+    pub const Outbound               : ServiceType = ServiceType(5);
+    pub const Administrative         : ServiceType = ServiceType(6);
+    pub const NasPrompt              : ServiceType = ServiceType(7);
+    pub const AuthenticateOnly       : ServiceType = ServiceType(8);
+    pub const CallbackNasPrompt      : ServiceType = ServiceType(9);
+    pub const CallCheck              : ServiceType = ServiceType(10);
+    pub const CallbackAdministrative : ServiceType = ServiceType(11);
 }
 
-enum_from_primitive! {
-#[derive(Clone, Debug, PartialEq)]
-#[repr(u8)]
-pub enum FramedProtocol {
-    Ppp = 1,
-    Slip = 2,
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct FramedRouting(pub u32);
+
+#[allow(non_upper_case_globals)]
+impl FramedRouting {
+    pub const None        : FramedRouting = FramedRouting(0);
+    pub const Send        : FramedRouting = FramedRouting(1);
+    pub const Receive     : FramedRouting = FramedRouting(2);
+    pub const SendReceive : FramedRouting = FramedRouting(3);
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct FramedProtocol(pub u32);
+
+#[allow(non_upper_case_globals)]
+impl FramedProtocol {
+    pub const Ppp      : FramedProtocol = FramedProtocol(1);
+    pub const Slip     : FramedProtocol = FramedProtocol(2);
     /// AppleTalk Remote Access Protocol
-    Arap = 3,
+    pub const Arap     : FramedProtocol = FramedProtocol(3);
     /// Gandalf proprietary SingleLink/MultiLink protocol
-    Gandalf = 4,
+    pub const Gandalf  : FramedProtocol = FramedProtocol(4);
     /// Xylogics proprietary IPX/SLIP
-    Xylogics = 5,
+    pub const Xylogics : FramedProtocol = FramedProtocol(5);
     /// X.75 Synchronous
-    X75 = 6,
-}
+    pub const X75      : FramedProtocol = FramedProtocol(6);
 }
 
 /// This Attribute indicates a compression protocol to be used for the
@@ -78,19 +77,19 @@ pub enum FramedProtocol {
 /// More than one compression protocol Attribute MAY be sent.  It is
 /// the responsibility of the NAS to apply the proper compression
 /// protocol to appropriate link traffic.
-enum_from_primitive! {
-#[derive(Clone, Debug, PartialEq)]
-#[repr(u8)]
-pub enum FramedCompression {
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct FramedCompression(pub u32);
+
+#[allow(non_upper_case_globals)]
+impl FramedCompression {
     /// No compression
-    None = 0,
+    pub const None      : FramedCompression = FramedCompression(0);
     /// VJ TCP/IP header compression (See RFC1144)
-    TcpIp = 1,
+    pub const TcpIp     : FramedCompression = FramedCompression(1);
     /// IPX header compression
-    Ipx = 2,
+    pub const Ipx       : FramedCompression = FramedCompression(2);
     /// Stac-LZS compression
-    StaticLzs = 3,
-}
+    pub const StaticLzs : FramedCompression = FramedCompression(3);
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -127,14 +126,14 @@ fn parse_attribute_content(i: &[u8], t: u8) -> IResult<&[u8], RadiusAttribute> {
         }
         4 => map!{i, take!(4), |v:&[u8]| RadiusAttribute::NasIPAddress(Ipv4Addr::new(v[0],v[1],v[2],v[3]))},
         5 => map!{i, be_u32, |v| RadiusAttribute::NasPort(v)},
-        6 => map_opt!{i, be_u32, |v| ServiceType::from_u32(v).map(|v| RadiusAttribute::ServiceType(v))},
-        7 => map_opt!{i, be_u32, |v| FramedProtocol::from_u32(v).map(|v| RadiusAttribute::FramedProtocol(v))},
+        6 => map!{i, be_u32, |v| RadiusAttribute::ServiceType(ServiceType(v))},
+        7 => map!{i, be_u32, |v| RadiusAttribute::FramedProtocol(FramedProtocol(v))},
         8 => map!{i, take!(4), |v:&[u8]| RadiusAttribute::FramedIPAddress(Ipv4Addr::new(v[0],v[1],v[2],v[3]))},
         9 => map!{i, take!(4), |v:&[u8]| RadiusAttribute::FramedIPNetmask(Ipv4Addr::new(v[0],v[1],v[2],v[3]))},
-        10 => map_opt!{i, be_u32, |v| FramedRouting::from_u32(v).map(|v| RadiusAttribute::FramedRouting(v))},
+        10 => map!{i, be_u32, |v| RadiusAttribute::FramedRouting(FramedRouting(v))},
         11 => value!(i, RadiusAttribute::FilterId(i)),
         12 => map!(i, be_u32, |v| RadiusAttribute::FramedMTU(v)),
-        13 => map_opt!{i, be_u32, |v| FramedCompression::from_u32(v).map(|v| RadiusAttribute::FramedCompression(v))},
+        13 => map!{i, be_u32, |v| RadiusAttribute::FramedCompression(FramedCompression(v))},
         26 => {
             if i.len() < 5 {
                 return Err(Err::Incomplete(Needed::Size(5)))
