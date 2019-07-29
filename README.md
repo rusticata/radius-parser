@@ -9,6 +9,8 @@
 
 radius-parser is a parser for the RADIUS protocol.
 
+It is mostly a test parser for nom-written parsers. If you use it and need more features, please open an issue.
+
 ## License
 
 This library is licensed under either the MIT license, or the Apache License, Version 2.0.
