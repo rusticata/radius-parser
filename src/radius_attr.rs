@@ -163,7 +163,7 @@ pub fn parse_radius_attribute(i: &[u8]) -> IResult<&[u8], RadiusAttribute> {
 
 #[cfg(test)]
 mod tests {
-    use radius_attr::*;
+    use crate::radius_attr::*;
     use nom::{Err, error::ErrorKind};
 
     #[test]

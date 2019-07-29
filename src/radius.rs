@@ -3,10 +3,9 @@
 //! RFC 2865: Remote Authentication Dial In User Service (RADIUS)
 //! RFC 2866: RADIUS Accounting
 
+use crate::radius_attr::*;
 use nom::IResult;
 use nom::number::streaming::{be_u16, be_u8};
-
-use radius_attr::*;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct RadiusCode(pub u8);
