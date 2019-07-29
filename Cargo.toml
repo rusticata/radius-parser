@@ -10,7 +10,7 @@ authors = ["Pierre Chifflier <chifflier@wzdftpd.net>"]
 categories = ["parsing"]
 
 [dependencies]
-nom = {version = "4.0", features = ["verbose-errors"]}
+nom = "5.0"
 
 [badges]
 travis-ci = { repository = "rusticata/radius-parser" }

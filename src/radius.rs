@@ -3,7 +3,8 @@
 //! RFC 2865: Remote Authentication Dial In User Service (RADIUS)
 //! RFC 2866: RADIUS Accounting
 
-use nom::{IResult, be_u16, be_u8};
+use nom::IResult;
+use nom::number::streaming::{be_u16, be_u8};
 
 use radius_attr::*;
 

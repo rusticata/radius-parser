@@ -1,4 +1,6 @@
-use nom::{rest, IResult, Needed, be_u32, be_u8, Err};
+use nom::{IResult, Needed, Err};
+use nom::combinator::rest;
+use nom::number::streaming::{be_u8, be_u32};
 use std::net::Ipv4Addr;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -153,7 +155,7 @@ fn parse_attribute_content(i: &[u8], t: u8) -> IResult<&[u8], RadiusAttribute> {
 pub fn parse_radius_attribute(i: &[u8]) -> IResult<&[u8], RadiusAttribute> {
     do_parse!{i,
         t: be_u8 >>
-        l: verify!(be_u8, |val:u8| val >= 2) >>
+        l: verify!(be_u8, |val:&u8| *val >= 2) >>
         v: flat_map!(take!(l-2),call!(parse_attribute_content,t)) >>
         ( v )
     }
@@ -162,7 +164,7 @@ pub fn parse_radius_attribute(i: &[u8]) -> IResult<&[u8], RadiusAttribute> {
 #[cfg(test)]
 mod tests {
     use radius_attr::*;
-    use nom::{Err, ErrorKind};
+    use nom::{Err, error::ErrorKind};
 
     #[test]
     fn test_attribute_invalid() {
