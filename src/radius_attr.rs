@@ -122,7 +122,7 @@ fn parse_attribute_content(i: &[u8], t: u8) -> IResult<&[u8], RadiusAttribute> {
         2 => value!(i, RadiusAttribute::UserPassword(i)),
         3 => {
             if i.len() < 2 {
-                return Err(Err::Incomplete(Needed::Size(2)))
+                return Err(Err::Incomplete(Needed::new(2)))
             }
             value!(i, RadiusAttribute::ChapPassword(i[0], &i[1..]))
         }
@@ -138,7 +138,7 @@ fn parse_attribute_content(i: &[u8], t: u8) -> IResult<&[u8], RadiusAttribute> {
         13 => map!{i, be_u32, |v| RadiusAttribute::FramedCompression(FramedCompression(v))},
         26 => {
             if i.len() < 5 {
-                return Err(Err::Incomplete(Needed::Size(5)))
+                return Err(Err::Incomplete(Needed::new(5)))
             }
             do_parse!{i,
                       vendorid:   be_u32 >>
@@ -209,7 +209,7 @@ mod tests {
             let data = &[26, 6, 0, 1, 2, 3];
             assert_eq!(
                 parse_radius_attribute(data),
-                Err(Err::Incomplete(Needed::Size(5)))
+                Err(Err::Incomplete(Needed::new(5)))
             )
         }
     }
