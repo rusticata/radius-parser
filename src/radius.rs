@@ -40,7 +40,10 @@ pub fn parse_radius_data(i: &[u8]) -> IResult<&[u8], RadiusData> {
     let (i, identifier) = be_u8(i)?;
     let (i, length) = be_u16(i)?;
     let (i, authenticator) = take(16usize)(i)?;
-    let (i, attributes) = cond(length > 20, map_parser(take(length - 20), many1(complete(parse_radius_attribute))))(i)?;
+    let (i, attributes) = cond(
+        length > 20,
+        map_parser(take(length - 20), many1(complete(parse_radius_attribute))),
+    )(i)?;
     let data = RadiusData {
         code,
         identifier,

@@ -133,7 +133,9 @@ fn parse_attribute_content(i: &[u8], t: u8) -> IResult<&[u8], RadiusAttribute> {
         })(i),
         5 => map(be_u32, RadiusAttribute::NasPort)(i),
         6 => map(be_u32, |v| RadiusAttribute::ServiceType(ServiceType(v)))(i),
-        7 => map(be_u32, |v| RadiusAttribute::FramedProtocol(FramedProtocol(v)))(i),
+        7 => map(be_u32, |v| {
+            RadiusAttribute::FramedProtocol(FramedProtocol(v))
+        })(i),
         8 => map(take(4usize), |v: &[u8]| {
             RadiusAttribute::FramedIPAddress(Ipv4Addr::new(v[0], v[1], v[2], v[3]))
         })(i),
@@ -143,7 +145,9 @@ fn parse_attribute_content(i: &[u8], t: u8) -> IResult<&[u8], RadiusAttribute> {
         10 => map(be_u32, |v| RadiusAttribute::FramedRouting(FramedRouting(v)))(i),
         11 => Ok((EMPTY, RadiusAttribute::FilterId(i))),
         12 => map(be_u32, RadiusAttribute::FramedMTU)(i),
-        13 => map(be_u32, |v| RadiusAttribute::FramedCompression(FramedCompression(v)))(i),
+        13 => map(be_u32, |v| {
+            RadiusAttribute::FramedCompression(FramedCompression(v))
+        })(i),
         26 => {
             if i.len() < 5 {
                 return Err(Err::Incomplete(Needed::new(5)));
@@ -183,13 +187,19 @@ mod tests {
     #[test]
     fn test_attribute_empty() {
         let data = &[255, 2, 2, 2];
-        assert_eq!(parse_radius_attribute(data), Ok((&data[2..], RadiusAttribute::Unknown(255, &[]))));
+        assert_eq!(
+            parse_radius_attribute(data),
+            Ok((&data[2..], RadiusAttribute::Unknown(255, &[])))
+        );
     }
 
     #[test]
     fn test_attribute() {
         let data = &[255, 4, 2, 2];
-        assert_eq!(parse_radius_attribute(data), Ok((&b""[..], RadiusAttribute::Unknown(255, &[2, 2]))));
+        assert_eq!(
+            parse_radius_attribute(data),
+            Ok((&b""[..], RadiusAttribute::Unknown(255, &[2, 2])))
+        );
     }
 
     #[test]
@@ -198,22 +208,33 @@ mod tests {
             let data = &[26, 7, 0, 1, 2, 3, 120];
             assert_eq!(
                 parse_radius_attribute(data),
-                Ok((&b""[..], RadiusAttribute::VendorSpecific(66051, "x".as_bytes())))
+                Ok((
+                    &b""[..],
+                    RadiusAttribute::VendorSpecific(66051, "x".as_bytes())
+                ))
             )
         }
         {
             let data = &[26, 6, 0, 1, 2, 3];
-            assert_eq!(parse_radius_attribute(data), Err(Err::Incomplete(Needed::new(5))))
+            assert_eq!(
+                parse_radius_attribute(data),
+                Err(Err::Incomplete(Needed::new(5)))
+            )
         }
     }
 
     #[test]
     fn test_parse_called_station_id() {
         {
-            let data = &[30, 19, 97, 97, 45, 98, 98, 45, 99, 99, 45, 100, 100, 45, 101, 101, 45, 102, 102];
+            let data = &[
+                30, 19, 97, 97, 45, 98, 98, 45, 99, 99, 45, 100, 100, 45, 101, 101, 45, 102, 102,
+            ];
             assert_eq!(
                 parse_radius_attribute(data),
-                Ok((&b""[..], RadiusAttribute::CalledStationId("aa-bb-cc-dd-ee-ff".as_bytes())))
+                Ok((
+                    &b""[..],
+                    RadiusAttribute::CalledStationId("aa-bb-cc-dd-ee-ff".as_bytes())
+                ))
             )
         }
     }
@@ -221,10 +242,15 @@ mod tests {
     #[test]
     fn test_parse_calling_station_id() {
         {
-            let data = &[31, 19, 97, 97, 45, 98, 98, 45, 99, 99, 45, 100, 100, 45, 101, 101, 45, 102, 102];
+            let data = &[
+                31, 19, 97, 97, 45, 98, 98, 45, 99, 99, 45, 100, 100, 45, 101, 101, 45, 102, 102,
+            ];
             assert_eq!(
                 parse_radius_attribute(data),
-                Ok((&b""[..], RadiusAttribute::CallingStationId("aa-bb-cc-dd-ee-ff".as_bytes())))
+                Ok((
+                    &b""[..],
+                    RadiusAttribute::CallingStationId("aa-bb-cc-dd-ee-ff".as_bytes())
+                ))
             )
         }
     }
