@@ -13,6 +13,3 @@ edition = "2018"
 
 [dependencies]
 nom = "6.0"
-
-[badges]
-travis-ci = { repository = "rusticata/radius-parser" }
