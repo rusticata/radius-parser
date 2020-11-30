@@ -40,9 +40,16 @@ pub fn parse_radius_data(i: &[u8]) -> IResult<&[u8], RadiusData> {
     let (i, identifier) = be_u8(i)?;
     let (i, length) = be_u16(i)?;
     let (i, authenticator) = take(16usize)(i)?;
+    // We cannot use cond(length > 20, ... take(length-20) ... here
+    // because `length-20` will be evaluated before cond, resulting in a potential
+    // (though harmless, since not used) integer underflow
+    // So, force lazy evaluation in `take`
     let (i, attributes) = cond(
         length > 20,
-        map_parser(take(length - 20), many1(complete(parse_radius_attribute))),
+        map_parser(
+            |d| take(length - 20)(d),
+            many1(complete(parse_radius_attribute)),
+        ),
     )(i)?;
     let data = RadiusData {
         code,
