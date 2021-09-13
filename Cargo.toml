@@ -12,4 +12,4 @@ categories = ["network-programming", "parser-implementations"]
 edition = "2018"
 
 [dependencies]
-nom = "6.0"
+nom = "7.0"
